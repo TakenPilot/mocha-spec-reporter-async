@@ -1,11 +1,9 @@
 {
   "name": "mocha-spec-reporter-async",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "Used when reporting from Gulp.  Outputs all test results at once to avoid an async console.log mess.",
   "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
+  "repository": "https://github.com/TakenPilot/mocha-spec-reporter-async",
   "author": "Dane Stuckel",
   "license": "ISC",
   "dependencies": {
