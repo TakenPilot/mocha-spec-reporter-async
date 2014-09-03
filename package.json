@@ -1,0 +1,11 @@
+{
+  "name": "mocha-spec-reporter-async",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Dane Stuckel",
+  "license": "ISC"
+}
