@@ -1,10 +1,8 @@
-
 /**
  * Module dependencies.
  */
 
-var util = require('util'),
-    Base = require('./base')
+var Base = require('./base')
     , cursor = Base.cursor
     , color = Base.color;
 
@@ -22,8 +20,6 @@ exports = module.exports = Spec;
  */
 
 function Spec(runner) {
-  var buffer = "";
-
   Base.call(this, runner);
 
   var self = this
@@ -31,37 +27,27 @@ function Spec(runner) {
       , indents = 0
       , n = 0;
 
-  function log(str) {
-    buffer += formatArgs(arguments);
-  }
-
-  function formatArgs(args){
-    return [util.format.apply(util.format, Array.prototype.slice.call(args))];
-  }
-
   function indent() {
     return Array(indents).join('  ')
   }
 
   runner.on('start', function(){
-    log();
+    console.log();
   });
 
   runner.on('suite', function(suite){
     ++indents;
-    log(color('suite', '%s%s'), indent(), suite.title);
+    console.log(color('suite', '%s%s'), indent(), suite.title);
   });
 
   runner.on('suite end', function(suite){
     --indents;
-    if (1 == indents) log();
-
-    console.log(buffer);
+    if (1 == indents) console.log();
   });
 
   runner.on('pending', function(test){
     var fmt = indent() + color('pending', '  - %s');
-    log(fmt, test.title);
+    console.log(fmt, test.title);
   });
 
   runner.on('pass', function(test){
@@ -70,20 +56,20 @@ function Spec(runner) {
           + color('checkmark', '  ' + Base.symbols.ok)
           + color('pass', ' %s ');
       cursor.CR();
-      log(fmt, test.title);
+      console.log(fmt, test.title);
     } else {
       var fmt = indent()
           + color('checkmark', '  ' + Base.symbols.ok)
           + color('pass', ' %s ')
           + color(test.speed, '(%dms)');
       cursor.CR();
-      log(fmt, test.title, test.duration);
+      console.log(fmt, test.title, test.duration);
     }
   });
 
   runner.on('fail', function(test, err){
     cursor.CR();
-    log(indent() + color('fail', '  %d) %s'), ++n, test.title);
+    console.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
   });
 
   runner.on('end', self.epilogue.bind(self));
