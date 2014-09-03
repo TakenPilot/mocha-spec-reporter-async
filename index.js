@@ -2,9 +2,9 @@
  * Module dependencies.
  */
 
-var Base = require('./base')
-    , cursor = Base.cursor
-    , color = Base.color;
+var Base = require('./base'),
+    cursor = Base.cursor,
+    color = Base.color;
 
 /**
  * Expose `Spec`.
@@ -32,45 +32,44 @@ function Spec(runner) {
   }
 
   runner.on('start', function(){
-    console.log();
-  });
+    this.log();
+  }.bind(this));
 
   runner.on('suite', function(suite){
     ++indents;
-    console.log(color('suite', '%s%s'), indent(), suite.title);
-  });
+    this.log(color('suite', '%s%s'), indent(), suite.title);
+  }.bind(this));
 
   runner.on('suite end', function(suite){
     --indents;
-    if (1 == indents) console.log();
-  });
+    if (1 == indents) this.log();
+  }.bind(this));
 
   runner.on('pending', function(test){
     var fmt = indent() + color('pending', '  - %s');
-    console.log(fmt, test.title);
-  });
+    this.log(fmt, test.title);
+  }.bind(this));
 
   runner.on('pass', function(test){
     if ('fast' == test.speed) {
-      var fmt = indent()
-          + color('checkmark', '  ' + Base.symbols.ok)
+      var fmt = indent() + color('checkmark', '  ' + Base.symbols.ok)
           + color('pass', ' %s ');
       cursor.CR();
-      console.log(fmt, test.title);
+      this.log(fmt, test.title);
     } else {
       var fmt = indent()
           + color('checkmark', '  ' + Base.symbols.ok)
           + color('pass', ' %s ')
           + color(test.speed, '(%dms)');
       cursor.CR();
-      console.log(fmt, test.title, test.duration);
+      this.log(fmt, test.title, test.duration);
     }
-  });
+  }.bind(this));
 
   runner.on('fail', function(test, err){
     cursor.CR();
-    console.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
-  });
+    this.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
+  }.bind(this));
 
   runner.on('end', self.epilogue.bind(self));
 }

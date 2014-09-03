@@ -9,6 +9,7 @@
   "author": "Dane Stuckel",
   "license": "ISC",
   "dependencies": {
+    "diff": "^1.0.8",
     "mocha": "^1.21.4"
   }
 }

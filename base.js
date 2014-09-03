@@ -1,13 +1,12 @@
-
 /**
  * Module dependencies.
  */
 
 var tty = require('tty'),
-    util = require('util')
-    , diff = require('diff')
-    , ms = require('../ms')
-    , utils = require('../utils');
+    util = require('util'),
+    diff = require('diff'),
+    ms = require('mocha/lib/ms'),
+    utils = require('mocha/lib/utils');
 
 /**
  * Save timer references to avoid Sinon interfering (see GH-237).
@@ -272,10 +271,17 @@ function Base(runner) {
   });
 }
 
+Base.prototype.print = function () {
+  var buffer = this._buffer;
+  console.log(buffer);
+  this._buffer = "";
+}
+
 Base.prototype.error = Base.prototype.log = function () {
-  var buffer = this.buffer | "";
+  var buffer = this._buffer || "";
+  //console.log(arguments, "\n" + util.format.apply(util, Array.prototype.slice.call(arguments)));
   buffer += util.format.apply(util, Array.prototype.slice.call(arguments)) + '\n';
-  this.buffer = buffer;
+  this._buffer = buffer;
 };
 
 /**
@@ -320,6 +326,8 @@ Base.prototype.epilogue = function(){
   }
 
   this.log();
+
+  this.print();
 };
 
 /**
