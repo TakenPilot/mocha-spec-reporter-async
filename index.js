@@ -144,64 +144,6 @@ exports.cursor = {
 };
 
 /**
- * Outut the given `failures` as a list.
- *
- * @param {Array} failures
- * @api public
- */
-
-exports.list = function(failures){
-  this.error();
-  failures.forEach(function(test, i){
-    // format
-    var fmt = color('error title', '  %s) %s:\n')
-      + color('error message', '     %s')
-      + color('error stack', '\n%s\n');
-
-    // msg
-    var err = test.err
-      , message = err.message || ''
-      , stack = err.stack || message
-      , index = stack.indexOf(message) + message.length
-      , msg = stack.slice(0, index)
-      , actual = err.actual
-      , expected = err.expected
-      , escape = true;
-
-    // uncaught
-    if (err.uncaught) {
-      msg = 'Uncaught ' + msg;
-    }
-
-    // explicitly show diff
-    if (err.showDiff && sameType(actual, expected)) {
-      escape = false;
-      err.actual = actual = utils.stringify(actual);
-      err.expected = expected = utils.stringify(expected);
-    }
-
-    // actual / expected diff
-    if ('string' == typeof actual && 'string' == typeof expected) {
-      fmt = color('error title', '  %s) %s:\n%s') + color('error stack', '\n%s\n');
-      var match = message.match(/^([^:]+): expected/);
-      msg = '\n      ' + color('error message', match ? match[1] : msg);
-
-      if (exports.inlineDiffs) {
-        msg += inlineDiff(err, escape);
-      } else {
-        msg += unifiedDiff(err, escape);
-      }
-    }
-
-    // indent stack trace without msg
-    stack = stack.slice(index ? index + 1 : index)
-      .replace(/^/gm, '  ');
-
-    this.error(fmt, (i + 1), test.fullTitle(), msg, stack);
-  }.bind(this));
-};
-
-/**
  * Initialize a new `Base` reporter.
  *
  * All other reporters generally
@@ -337,6 +279,66 @@ Base.prototype.error = Base.prototype.log = function () {
 };
 
 /**
+ * Outut the given `failures` as a list.
+ *
+ * @param {Array} failures
+ * @api public
+ */
+
+Base.prototype.list = function(failures){
+
+  var self = this;
+  self.error();
+  failures.forEach(function(test, i){
+    // format
+    var fmt = color('error title', '  %s) %s:\n')
+      + color('error message', '     %s')
+      + color('error stack', '\n%s\n');
+
+    // msg
+    var err = test.err
+      , message = err.message || ''
+      , stack = err.stack || message
+      , index = stack.indexOf(message) + message.length
+      , msg = stack.slice(0, index)
+      , actual = err.actual
+      , expected = err.expected
+      , escape = true;
+
+    // uncaught
+    if (err.uncaught) {
+      msg = 'Uncaught ' + msg;
+    }
+
+    // explicitly show diff
+    if (err.showDiff && sameType(actual, expected)) {
+      escape = false;
+      err.actual = actual = utils.stringify(actual);
+      err.expected = expected = utils.stringify(expected);
+    }
+
+    // actual / expected diff
+    if ('string' == typeof actual && 'string' == typeof expected) {
+      fmt = color('error title', '  %s) %s:\n%s') + color('error stack', '\n%s\n');
+      var match = message.match(/^([^:]+): expected/);
+      msg = '\n      ' + color('error message', match ? match[1] : msg);
+
+      if (exports.inlineDiffs) {
+        msg += inlineDiff(err, escape);
+      } else {
+        msg += unifiedDiff(err, escape);
+      }
+    }
+
+    // indent stack trace without msg
+    stack = stack.slice(index ? index + 1 : index)
+      .replace(/^/gm, '  ');
+
+    self.error(fmt, (i + 1), test.fullTitle(), msg, stack);
+  });
+};
+
+/**
  * Output common epilogue used by many of
  * the bundled reporters.
  *
@@ -345,36 +347,35 @@ Base.prototype.error = Base.prototype.log = function () {
 Base.prototype.epilogue = function(){
   var stats = this.stats;
   var fmt;
+  var self = this;
 
-  this.log();
+  self.log();
 
   // passes
-  fmt = color('bright pass', ' ')
-    + color('green', ' %d passing')
-    + color('light', ' (%s)');
+  fmt = color('bright pass', ' ') + color('green', ' %d passing') + color('light', ' (%s)');
 
-  this.log(fmt, stats.passes || 0, ms(stats.duration));
+  self.log(fmt, stats.passes || 0, ms(stats.duration));
 
   // pending
   if (stats.pending) {
     fmt = color('pending', ' ') + color('pending', ' %d pending');
 
-    this.log(fmt, stats.pending);
+    self.log(fmt, stats.pending);
   }
 
   // failures
   if (stats.failures) {
     fmt = color('fail', '  %d failing');
 
-    this.error(fmt, stats.failures);
+    self.error(fmt, stats.failures);
 
-    Base.list(this.failures);
-    this.error();
+    self.list(this.failures);
+    self.error();
   }
 
-  this.log();
+  self.log();
 
-  this.print();
+  self.print();
 };
 
 /**
