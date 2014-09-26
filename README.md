@@ -21,3 +21,7 @@ gulp.task('unit tests', function (done) {
       }));
 });
 ```
+
+##To DO
+* Lower code complexity
+* Add tests for color

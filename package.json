@@ -1,6 +1,6 @@
 {
   "name": "mocha-spec-reporter-async",
-  "version": "0.0.2",
+  "version": "0.5.0",
   "description": "Used when reporting from Gulp.  Outputs all test results at once to avoid an async console.log mess.",
   "main": "index.js",
   "keywords": ["mocha", "spec", "reporter", "async"],
