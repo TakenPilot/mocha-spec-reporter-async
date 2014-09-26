@@ -3,7 +3,17 @@
   "version": "0.0.2",
   "description": "Used when reporting from Gulp.  Outputs all test results at once to avoid an async console.log mess.",
   "main": "index.js",
+  "keywords": ["mocha", "spec", "reporter", "async"],
   "repository": "https://github.com/TakenPilot/mocha-spec-reporter-async",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -R mocha-lcov-reporter | ./node_modules/coveralls/bin/coveralls.js"
+  },
+  "config": {
+    "blanket": {
+      "pattern": "index.js",
+      "data-cover-never": "node_modules"
+    }
+  },
   "author": "Dane Stuckel",
   "license": "ISC",
   "dependencies": {
@@ -13,6 +23,10 @@
   "devDependencies": {
     "chai": "^1.9.1",
     "lodash": "^2.4.1",
-    "sinon": "^1.10.3"
+    "sinon": "^1.10.3",
+    "mocha": "^1.21.4",
+    "mocha-lcov-reporter": "0.0.1",
+    "blanket": "^1.1.6",
+    "coveralls": "^2.11.2"
   }
 }

@@ -9,7 +9,7 @@ describe('Reporter', function () {
   var sandbox, reporter;
 
   beforeEach(function () {
-
+    Reporter.useColors = false;
     sandbox = sinon.sandbox.create();
   });
 
