@@ -6,17 +6,6 @@ var tty = require('tty'),
   utils = require('mocha/lib/utils');
 
 /**
- * Save timer references to avoid Sinon interfering (see GH-237).
- */
-/*ignore jslint start*/
-var Date = global.Date,
-  setTimeout = global.setTimeout,
-  setInterval = global.setInterval,
-  clearTimeout = global.clearTimeout,
-  clearInterval = global.clearInterval;
-/*ignore jslint end*/
-
-/**
  * Check if both stdio streams are associated with a tty.
  */
 var isatty = tty.isatty(1) && tty.isatty(2);
@@ -183,7 +172,7 @@ function Base(runner) {
   runner.stats = stats;
 
   runner.on('start', function () {
-    stats.start = new Date;
+    stats.start = new Date();
     self.log();
   });
 
@@ -197,14 +186,14 @@ function Base(runner) {
     self.log(color('suite', '%s%s'), indent(), title);
   });
 
-  runner.on('suite end', function (suite) {
+  runner.on('suite end', function () {
     --indents;
     if (1 === indents) {
       self.log();
     }
   });
 
-  runner.on('test end', function (test) {
+  runner.on('test end', function () {
     stats.tests = stats.tests || 0;
     stats.tests++;
   });
@@ -393,8 +382,13 @@ Base.prototype.epilogue = function () {
  * @api private
  */
 function pad(str, len) {
+  len = len - str.length + 1;
+  var padding = "";
+  for(var i = 0; i < len; i++) {
+    padding += ' ';
+  }
   str = String(str);
-  return Array(len - str.length + 1).join(' ') + str;
+  return padding + str;
 }
 
 
@@ -459,7 +453,7 @@ function unifiedDiff(err, escape) {
   }
 
   function notBlank(line) {
-    return line != null;
+    return line !== null;
   }
 
   var msg = diff.createPatch('string', err.actual, err.expected);
