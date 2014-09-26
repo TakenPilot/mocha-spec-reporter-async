@@ -9,6 +9,8 @@ Used when reporting from Gulp. Outputs all test results at once to avoid an asyn
 
 [![Coverage Status](https://coveralls.io/repos/TakenPilot/mocha-spec-reporter-async/badge.png?branch=master)](https://coveralls.io/r/TakenPilot/mocha-spec-reporter-async?branch=master)
 
+[![Dependencies](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)
+
 ```JavaScript
 gulp.task('unit tests', function (done) {
   var mocha = require('gulp-mocha');
