@@ -188,10 +188,6 @@ function Base(runner) {
   });
 
   runner.on('suite', function (suite) {
-    if (!suite) {
-      throw new Error('Missing first parameter');
-    }
-
     var title = suite.title || "";
     stats.suites = stats.suites || 0;
     if (!suite.root) {
@@ -214,9 +210,6 @@ function Base(runner) {
   });
 
   runner.on('pass', function (test) {
-    if (!test) {
-      throw new Error('Missing first parameter');
-    }
 
     stats.passes = stats.passes || 0;
 
@@ -256,7 +249,7 @@ function Base(runner) {
     failures.push(test);
 
     Base.cursor.CR();
-    self.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
+    self.log(indent() + color('fail', '  %d) %s'), ++n, test.title || "");
   });
 
   runner.on('end', function () {
@@ -269,7 +262,7 @@ function Base(runner) {
   runner.on('pending', function (test) {
     stats.pending++;
     var fmt = indent() + color('pending', '  - %s');
-    self.log(fmt, test.title);
+    self.log(fmt, test.title || "");
   });
 }
 
@@ -345,7 +338,9 @@ Base.prototype.list = function (failures) {
     stack = stack.slice(index ? index + 1 : index)
       .replace(/^/gm, '  ');
 
-    self.error(fmt, (i + 1), test.fullTitle(), msg, stack);
+    var title = typeof test.fullTitle === 'function' && test.fullTitle() || test.title || "";
+
+    self.error(fmt, (i + 1), title, msg, stack);
   });
 };
 
