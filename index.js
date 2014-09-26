@@ -1,7 +1,3 @@
-/**
- * Module dependencies.
- */
-
 var tty = require('tty'),
   util = require('util'),
   diff = require('diff'),
@@ -12,12 +8,13 @@ var tty = require('tty'),
 /**
  * Save timer references to avoid Sinon interfering (see GH-237).
  */
-
+/*ignore jslint start*/
 var Date = global.Date,
   setTimeout = global.setTimeout,
   setInterval = global.setInterval,
   clearTimeout = global.clearTimeout,
   clearInterval = global.clearInterval;
+/*ignore jslint end*/
 
 /**
  * Check if both stdio streams are associated with a tty.
@@ -75,7 +72,7 @@ exports.symbols = {
 };
 
 // With node.js on Windows: use symbols available in terminal default fonts
-if ('win32' == process.platform) {
+if ('win32' === process.platform) {
   exports.symbols.ok = '\u221A';
   exports.symbols.err = '\u00D7';
   exports.symbols.dot = '.';
@@ -93,8 +90,10 @@ if ('win32' == process.platform) {
  * @api private
  */
 
-var color = exports.color = function(type, str) {
-  if (!exports.useColors) return str;
+var color = exports.color = function (type, str) {
+  if (!exports.useColors) {
+    return str;
+  }
   return '\u001b[' + exports.colors[type] + 'm' + str + '\u001b[0m';
 };
 
@@ -104,11 +103,9 @@ var color = exports.color = function(type, str) {
  */
 
 exports.window = {
-  width: isatty
-    ? process.stdout.getWindowSize
-    ? process.stdout.getWindowSize(1)[0]
-    : tty.getWindowSize()[1]
-    : 75
+  width: isatty ?
+    process.stdout.getWindowSize ?
+      process.stdout.getWindowSize(1)[0] : tty.getWindowSize()[1] : 75
 };
 
 /**
@@ -117,23 +114,31 @@ exports.window = {
  */
 
 exports.cursor = {
-  hide: function(){
-    isatty && process.stdout.write('\u001b[?25l');
+  hide: function () {
+    if (isatty) {
+      process.stdout.write('\u001b[?25l');
+    }
   },
 
-  show: function(){
-    isatty && process.stdout.write('\u001b[?25h');
+  show: function () {
+    if (isatty) {
+      process.stdout.write('\u001b[?25h');
+    }
   },
 
-  deleteLine: function(){
-    isatty && process.stdout.write('\u001b[2K');
+  deleteLine: function () {
+    if (isatty) {
+      process.stdout.write('\u001b[2K');
+    }
   },
 
-  beginningOfLine: function(){
-    isatty && process.stdout.write('\u001b[0G');
+  beginningOfLine: function () {
+    if (isatty) {
+      process.stdout.write('\u001b[0G');
+    }
   },
 
-  CR: function(){
+  CR: function () {
     if (isatty) {
       exports.cursor.deleteLine();
       exports.cursor.beginningOfLine();
@@ -163,20 +168,26 @@ function Base(runner) {
     failures = this.failures = [];
 
   function indent() {
-    return Array(indents).join('  ')
+    var str = "";
+    for (var i = 1; i < indents; i++) {
+      str += '  ';
+    }
+    return str;
   }
 
-  if (!runner) return;
+  if (!runner) {
+    return;
+  }
   this.runner = runner;
 
   runner.stats = stats;
 
-  runner.on('start', function(){
+  runner.on('start', function () {
     stats.start = new Date;
     self.log();
   });
 
-  runner.on('suite', function(suite) {
+  runner.on('suite', function (suite) {
     if (!suite) {
       throw new Error('Missing first parameter');
     }
@@ -190,19 +201,19 @@ function Base(runner) {
     self.log(color('suite', '%s%s'), indent(), title);
   });
 
-  runner.on('suite end', function(suite) {
+  runner.on('suite end', function (suite) {
     --indents;
-    if (1 == indents) {
+    if (1 === indents) {
       self.log();
     }
   });
 
-  runner.on('test end', function(test){
+  runner.on('test end', function (test) {
     stats.tests = stats.tests || 0;
     stats.tests++;
   });
 
-  runner.on('pass', function(test){
+  runner.on('pass', function (test) {
     if (!test) {
       throw new Error('Missing first parameter');
     }
@@ -216,7 +227,7 @@ function Base(runner) {
       if (duration > slow) {
         test.speed = 'slow';
       } else if (test.duration > medium) {
-        test.speed = 'medium'
+        test.speed = 'medium';
       } else {
         test.speed = 'fast';
       }
@@ -227,7 +238,7 @@ function Base(runner) {
     stats.passes++;
 
     var fmt, title = test.title || "";
-    if ('fast' == test.speed) {
+    if ('fast' === test.speed) {
       fmt = indent() + color('checkmark', '  ' + Base.symbols.ok) + color('pass', ' %s ');
       Base.cursor.CR();
       self.log(fmt, title);
@@ -238,7 +249,7 @@ function Base(runner) {
     }
   });
 
-  runner.on('fail', function(test, err){
+  runner.on('fail', function (test, err) {
     stats.failures = stats.failures || 0;
     stats.failures++;
     test.err = err;
@@ -248,14 +259,14 @@ function Base(runner) {
     self.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
   });
 
-  runner.on('end', function(){
-    stats.end = new Date;
-    stats.duration = new Date - stats.start;
+  runner.on('end', function () {
+    stats.end = new Date();
+    stats.duration = new Date() - stats.start;
 
     self.epilogue();
   });
 
-  runner.on('pending', function(test){
+  runner.on('pending', function (test) {
     stats.pending++;
     var fmt = indent() + color('pending', '  - %s');
     self.log(fmt, test.title);
@@ -285,25 +296,25 @@ Base.prototype.error = Base.prototype.log = function () {
  * @api public
  */
 
-Base.prototype.list = function(failures){
+Base.prototype.list = function (failures) {
 
   var self = this;
   self.error();
-  failures.forEach(function(test, i){
+  failures.forEach(function (test, i) {
     // format
-    var fmt = color('error title', '  %s) %s:\n')
-      + color('error message', '     %s')
-      + color('error stack', '\n%s\n');
+    var fmt = color('error title', '  %s) %s:\n') +
+      color('error message', '     %s') +
+      color('error stack', '\n%s\n');
 
     // msg
-    var err = test.err
-      , message = err.message || ''
-      , stack = err.stack || message
-      , index = stack.indexOf(message) + message.length
-      , msg = stack.slice(0, index)
-      , actual = err.actual
-      , expected = err.expected
-      , escape = true;
+    var err = test.err,
+      message = err.message || '',
+      stack = err.stack || message,
+      index = stack.indexOf(message) + message.length,
+      msg = stack.slice(0, index),
+      actual = err.actual,
+      expected = err.expected,
+      escape = true;
 
     // uncaught
     if (err.uncaught) {
@@ -318,7 +329,7 @@ Base.prototype.list = function(failures){
     }
 
     // actual / expected diff
-    if ('string' == typeof actual && 'string' == typeof expected) {
+    if ('string' === typeof actual && 'string' === typeof expected) {
       fmt = color('error title', '  %s) %s:\n%s') + color('error stack', '\n%s\n');
       var match = message.match(/^([^:]+): expected/);
       msg = '\n      ' + color('error message', match ? match[1] : msg);
@@ -344,7 +355,7 @@ Base.prototype.list = function(failures){
  *
  * @api public
  */
-Base.prototype.epilogue = function(){
+Base.prototype.epilogue = function () {
   var stats = this.stats;
   var fmt;
   var self = this;
@@ -406,15 +417,15 @@ function inlineDiff(err, escape) {
   var lines = msg.split('\n');
   if (lines.length > 4) {
     var width = String(lines.length).length;
-    msg = lines.map(function(str, i){
+    msg = lines.map(function (str, i) {
       i++;
       return pad(i, width) + ' |' + ' ' + str;
     }).join('\n');
   }
 
   // legend
-  msg = '\n' + color('diff removed', 'actual') + ' ' + color('diff added', 'expected') + '\n\n'
-    + msg + '\n';
+  msg = '\n' + color('diff removed', 'actual') + ' ' + color('diff added', 'expected') +
+    '\n\n' + msg + '\n';
 
   // indent
   msg = msg.replace(/^/gm, '      ');
@@ -430,26 +441,37 @@ function inlineDiff(err, escape) {
  */
 function unifiedDiff(err, escape) {
   var indent = '      ';
+
   function cleanUp(line) {
     if (escape) {
       line = escapeInvisibles(line);
     }
-    if (line[0] === '+') return indent + colorLines('diff added', line);
-    if (line[0] === '-') return indent + colorLines('diff removed', line);
-    if (line.match(/\@\@/)) return null;
-    if (line.match(/\\ No newline/)) return null;
-    else return indent + line;
+    if (line[0] === '+') {
+      return indent + colorLines('diff added', line);
+    }
+    if (line[0] === '-') {
+      return indent + colorLines('diff removed', line);
+    }
+    if (line.match(/\@\@/)) {
+      return null;
+    }
+    if (line.match(/\\ No newline/)) {
+      return null;
+    }
+    else {
+      return indent + line;
+    }
   }
+
   function notBlank(line) {
     return line != null;
   }
+
   var msg = diff.createPatch('string', err.actual, err.expected);
   var lines = msg.split('\n').splice(4);
-  return '\n      '
-    + colorLines('diff added',   '+ expected') + ' '
-    + colorLines('diff removed', '- actual')
-    + '\n\n'
-    + lines.map(cleanUp).filter(notBlank).join('\n');
+  return '\n      ' + colorLines('diff added', '+ expected') + ' ' +
+    colorLines('diff removed', '- actual') + '\n\n' +
+    lines.map(cleanUp).filter(notBlank).join('\n');
 }
 
 /**
@@ -460,11 +482,15 @@ function unifiedDiff(err, escape) {
  * @api private
  */
 function errorDiff(err, type, escape) {
-  var actual   = escape ? escapeInvisibles(err.actual)   : err.actual;
+  var actual = escape ? escapeInvisibles(err.actual) : err.actual;
   var expected = escape ? escapeInvisibles(err.expected) : err.expected;
-  return diff['diff' + type](actual, expected).map(function(str){
-    if (str.added) return colorLines('diff added', str.value);
-    if (str.removed) return colorLines('diff removed', str.value);
+  return diff['diff' + type](actual, expected).map(function (str) {
+    if (str.added) {
+      return colorLines('diff added', str.value);
+    }
+    if (str.removed) {
+      return colorLines('diff removed', str.value);
+    }
     return str.value;
   }).join('');
 }
@@ -491,7 +517,7 @@ function escapeInvisibles(line) {
  * @api private
  */
 function colorLines(name, str) {
-  return str.split('\n').map(function(str){
+  return str.split('\n').map(function (str) {
     return color(name, str);
   }).join('\n');
 }
