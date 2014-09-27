@@ -7,33 +7,12 @@ var tty = require('tty'),
   _ = require('lodash'),
   utils = require('mocha/lib/utils');
 
-/**
- * Check if both stdio streams are associated with a tty.
- * Expose so we can mock it
- */
-var isatty = exports.isatty = tty.isatty(1) && tty.isatty(2);
-
-/**
- * Expose `Base`.
- */
 exports = module.exports = Base;
-
-/**
- * Expose so that we can mock it
- * @type {process.stdout|*|ChildProcess.stdout|Interface.stdout}
- */
-exports.stdout = process.stdout;
-
-/**
- * Expose so that we can mock it
- * @type {process.stderr|*|ChildProcess.stderr}
- */
-exports.stderr = process.stderr;
 
 /**
  * Enable coloring by default.
  */
-exports.useColors = isatty || (process.env.MOCHA_COLORS !== undefined);
+exports.useColors = (tty.isatty(1) && tty.isatty(2)) || (process.env.MOCHA_COLORS !== undefined);
 
 /**
  * Inline diffs instead of +/-
@@ -43,7 +22,7 @@ exports.inlineDiffs = false;
 /**
  * Default color map.
  */
-exports.colors = {
+var colors = {
   'pass': 90,
   'fail': 31,
   'bright pass': 92,
@@ -66,24 +45,6 @@ exports.colors = {
 };
 
 /**
- * Default symbol map.
- */
-if ('win32' === process.platform) {
-  // With node.js on Windows: use symbols available in terminal default fonts
-  exports.symbols = {
-    ok: '\u221A',
-    err: '\u00D7',
-    dot: '․'
-  };
-} else {
-  exports.symbols = {
-    ok: '✓',
-    err: '✖',
-    dot: '․'
-  };
-}
-
-/**
  * Color `str` with the given `type`,
  * allowing colors to be disabled,
  * as well as user-defined color
@@ -95,23 +56,12 @@ if ('win32' === process.platform) {
  * @api private
  */
 
-var color = exports.color = function (type, str) {
+function color(type, str) {
   if (!exports.useColors) {
     return str;
   }
-  return '\u001b[' + exports.colors[type] + 'm' + str + '\u001b[0m';
-};
-
-/**
- * Expose term window size, with some
- * defaults for when stderr is not a tty.
- */
-
-exports.window = {
-  width: isatty ?
-    exports.stdout.getWindowSize ?
-      exports.stdout.getWindowSize(1)[0] : tty.getWindowSize()[1] : 75
-};
+  return '\u001b[' + colors[type] + 'm' + str + '\u001b[0m';
+}
 
 function indent(indents) {
   var str = "";
@@ -250,6 +200,22 @@ function Base(runner) {
   runner.on('pending', onPending.bind(this));
 }
 Base.prototype = {
+  getSymbols: function () {
+    if ('win32' === process.platform) {
+      // With node.js on Windows: use symbols available in terminal default fonts
+      return {
+        ok: '\u221A',
+        err: '\u00D7',
+        dot: '․'
+      };
+    } else {
+      return {
+        ok: '✓',
+        err: '✖',
+        dot: '․'
+      };
+    }
+  },
   getBuffer: function () {
     return this._buffer || '';
   },
@@ -283,13 +249,14 @@ Base.prototype = {
   },
   logPass: function (test) {
     var fmt,
+      symbols = this.getSymbols(),
       indents = this.indents,
       title = test.title || "";
     if ('fast' === test.speed) {
-      fmt = indent(indents) + color('checkmark', '  ' + Base.symbols.ok) + color('pass', ' %s ');
+      fmt = indent(indents) + color('checkmark', '  ' + symbols.ok) + color('pass', ' %s ');
       this.log(fmt, title);
     } else {
-      fmt = indent(indents) + color('checkmark', '  ' + Base.symbols.ok) + color('pass', ' %s ') + color(test.speed, '(%dms)');
+      fmt = indent(indents) + color('checkmark', '  ' + symbols.ok) + color('pass', ' %s ') + color(test.speed, '(%dms)');
       this.log(fmt, title, test.duration);
     }
   },

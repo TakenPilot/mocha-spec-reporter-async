@@ -11,6 +11,7 @@ Used when reporting from Gulp. Outputs all test results at once to avoid an asyn
 
 [![Dependencies](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)
 
+##Example
 ```JavaScript
 gulp.task('unit tests', function (done) {
   var mocha = require('gulp-mocha');
@@ -26,4 +27,4 @@ gulp.task('unit tests', function (done) {
 
 ##To DO
 * Lower code complexity
-* Add tests for color
+* Find better way to convert checkmarks and ecks between windows and linux/mac.
