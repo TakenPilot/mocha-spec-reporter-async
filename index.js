@@ -1,3 +1,5 @@
+/* jshint -W100 */
+
 var tty = require('tty'),
   util = require('util'),
   diff = require('diff'),
@@ -66,15 +68,8 @@ exports.colors = {
 /**
  * Default symbol map.
  */
-
-exports.symbols = {
-  ok: '✓',
-  err: '✖',
-  dot: '․'
-};
-
-// With node.js on Windows: use symbols available in terminal default fonts
 if ('win32' === process.platform) {
+  // With node.js on Windows: use symbols available in terminal default fonts
   exports.symbols = {
     ok: '\u221A',
     err: '\u00D7',
@@ -231,12 +226,12 @@ function Base(runner) {
   this.indents = 0;
   this.n = 0;
   this.stats = {
-      suites: 0,
-      tests: 0,
-      passes: 0,
-      pending: 0,
-      failures: 0
-    };
+    suites: 0,
+    tests: 0,
+    passes: 0,
+    pending: 0,
+    failures: 0
+  };
   this.failures = [];
   this.runner = runner;
 
@@ -393,7 +388,7 @@ Base.prototype = {
 function pad(str, len) {
   len = len - str.length + 1;
   var padding = "";
-  for(var i = 0; i < len; i++) {
+  for (var i = 0; i < len; i++) {
     padding += ' ';
   }
   str = String(str);
@@ -404,7 +399,7 @@ function pad(str, len) {
 /**
  * Returns an inline diff between 2 strings with coloured ANSI output
  *
- * @param {Error} err Error with actual/expected
+ * @param {{actual: *, expected: *}} err Error with actual/expected
  * @param {boolean} escape
  * @return {String} Diff
  * @api private
@@ -458,7 +453,7 @@ function notBlank(line) {
 /**
  * Returns a unified diff between 2 strings
  *
- * @param {Error} err Error with actual/expected
+ * @param {{actual: *, expected: *}} err Error with actual/expected
  * @param {String} escape
  * @return {String} difference
  * @api private
