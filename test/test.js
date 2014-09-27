@@ -217,7 +217,8 @@ describe('Reporter', function () {
     var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
     stubPrint(reporter);
-    reporter.stats = {failures: 1, duration: 100};
+    reporter.stats.failures = 1;
+    reporter.stats.start = new Date(new Date().getTime() - 100);
     reporter.failures = [{ err: {} }];
 
     fn['end']();
@@ -260,5 +261,42 @@ describe('Reporter', function () {
     fn['test end']();
 
     expect(reporter.getBuffer()).to.equal('');
+  });
+
+  it('should increase indents on new suite', function () {
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
+    reporter.indents = 3;
+
+    fn['suite']({'title': 'named suite'});
+
+    expect(reporter.getBuffer()).to.equal('      named suite\n');
+    expect(reporter.indents).to.equal(4);
+  });
+
+  it('should decrease indent after suite end', function () {
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
+    reporter.indents = 4;
+
+    //act
+    fn['suite end']();
+
+    expect(reporter.indents).to.equal(3);
+  });
+
+  it('should go to new line after finished all suites', function () {
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
+    reporter.indents = 2;
+
+    //act
+    fn['suite end']();
+
+    expect(reporter.getBuffer()).to.equal('\n');
+    expect(reporter.indents).to.equal(1);
   });
 });
