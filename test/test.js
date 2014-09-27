@@ -3,9 +3,31 @@ var sinon = require('sinon'),
   Reporter = require('../.');
 
 describe('Reporter', function () {
+
+  function listenToEvents(mockRunner) {
+    var fn = {};
+    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    return fn;
+  }
+
+  function stubPrint(reporter) {
+    return sandbox.stub(reporter, 'print');
+  }
+
+  function expectEventToPrint(event, expected, args) {
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
+
+    fn[event].apply(null, args);
+
+    expect(reporter.getBuffer()).to.equal(expected);
+  }
+
   var mockRunner = {
     on: function() {}
   };
+
   var sandbox, reporter;
 
   beforeEach(function () {
@@ -22,65 +44,159 @@ describe('Reporter', function () {
   });
 
   it('should handle start', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
+    expectEventToPrint('start', '\n');
+  });
 
-    //act
-    fn['start']();
-
-    //assert
-    spy.calledWith('')
+  it('should handle start (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('start', '\n');
   });
 
   it('should handle end', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    expectEventToPrint('end', '\n  0 passing\n\n');
+  });
+
+  it('should handle end (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('end', '\n\u001b[92m \u001b[0m\u001b[32m 0 passing\u001b[0m\n\n');
+  });
+
+  it('should handle pending', function () {
+    expectEventToPrint('pending', '  - \n', [{}]);
+  });
+
+  it('should handle pending (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('pending', '\u001b[36m  - \u001b[0m\n', [{}]);
+  });
+
+  it('should handle pending with title', function () {
+    expectEventToPrint('pending', '  - test title\n', [{title: "test title"}]);
+  });
+
+  it('should handle pending with title (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('pending', '\u001b[36m  - test title\u001b[0m\n', [{title: "test title"}]);
+  });
+
+  it('should handle suite end', function () {
+    expectEventToPrint('suite end', '');
+  });
+
+  it('should handle unnamed suite', function () {
+    expectEventToPrint('suite', '\n', [{}]);
+  });
+
+  it('should handle named suite', function () {
+    expectEventToPrint('suite', 'someName\n', [{title: "someName"}]);
+  });
+
+  it('should handle unnamed pass', function () {
+    expectEventToPrint('pass', '  ✓  \n', [{}]);
+  });
+
+  it('should handle named pass', function () {
+    expectEventToPrint('pass', '  ✓ someTestName \n', [{title: 'someTestName'}]);
+  });
+
+  it('should handle named pass (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('pass', '\u001b[32m  ✓\u001b[0m\u001b[90m someTestName \u001b[0m\n', [{title: 'someTestName'}]);
+  });
+
+  it('should handle named pass with slow speed', function () {
+    expectEventToPrint('pass', '  ✓ someSlowTest (200ms)\n', [{
+      title: 'someSlowTest',
+      slow: function () { return 100; },
+      duration: 200
+    }]);
+  });
+
+  it('should handle named pass with medium speed', function () {
+    expectEventToPrint('pass', '  ✓ someSlowTest (75ms)\n', [{
+      title: 'someSlowTest',
+      slow: function () { return 100; },
+      duration: 75
+    }]);
+  });
+
+  it('should handle named pass with fast speed', function () {
+    expectEventToPrint('pass', '  ✓ someSlowTest \n', [{
+      title: 'someSlowTest',
+      slow: function () { return 100; },
+      duration: 25
+    }]);
+  });
+
+  it('should handle fail', function () {
+    expectEventToPrint('fail', '  1) someTestName\n', [{title: 'someTestName'}]);
+  });
+
+  it('should handle fail (colors)', function () {
+    Reporter.useColors = true;
+    expectEventToPrint('fail', '\u001b[31m  1) someTestName\u001b[0m\n', [{title: 'someTestName'}]);
+  });
+
+  it('should count failures', function () {
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
+    stubPrint(reporter);
 
     //act
-    fn['end']();
+    fn['fail']({title: 'someTestName'});
+    fn['fail']({title: 'someTestName'});
+    fn['fail']({title: 'someTestName'});
 
     //assert
-    spy.calledWith('')
+    expect(reporter.getBuffer()).to.equal("  1) someTestName\n  2) someTestName\n  3) someTestName\n");
   });
 
   it('should handle end with stats', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    var number = 7;
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
-    reporter.stats = {pending: 7};
+    stubPrint(reporter);
+    reporter.stats = {pending: number};
 
-    //act
     fn['end']();
 
-    //assert
-    spy.calledWith('')
+    expect(reporter.getBuffer()).to.equal('\n  0 passing\n  ' + number + ' pending\n\n');
   });
 
-  it('should handle end with failure', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+  it('should handle end with failure with test title', function () {
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
+    stubPrint(reporter);
+    reporter.stats = {failures: 1};
+    reporter.failures = [{err: {message: "test title"}}];
+
+    fn['end']();
+
+    expect(reporter.getBuffer()).to.equal('\n  0 passing\n  1 failing\n\n  1) :\n     test title\n  \n\n\n\n');
+  });
+
+  it('should handle end with failure with no test title', function () {
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
     reporter.stats = {failures: 1};
     reporter.failures = [{err: {}}];
 
-    //act
     fn['end']();
 
-    //assert
-    spy.calledWith('')
+    expect(reporter.getBuffer()).to.equal('\n  0 passing\n  1 failing\n\n  1) :\n     \n  \n\n\n\n');
   });
 
   it('should handle end with uncaught failure', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    var expected = '\n  0 passing\n' +
+      '  1 failing\n\n' +
+      '  1) :\n\n      Uncaught \n' +
+      '      + expected - actual\n\n' +
+      '      +"ABbbb"\n      -"AAaab"\n' +
+      '      \n  \n\n\n\n';
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
+    stubPrint(reporter);
     reporter.stats = {failures: 1};
     reporter.failures = [{
       err: {
@@ -91,18 +207,34 @@ describe('Reporter', function () {
       }
     }];
 
-    //act
     fn['end']();
 
-    //assert
-    spy.calledWith('')
+    expect(reporter.getBuffer()).to.equal(expected);
+  });
+
+  it('should handle end with duration', function () {
+    var expected = '\n  0 passing (100ms)\n  1 failing\n\n  1) :\n     \n  \n\n\n\n';
+    var fn = listenToEvents(mockRunner);
+    reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
+    reporter.stats = {failures: 1, duration: 100};
+    reporter.failures = [{ err: {} }];
+
+    fn['end']();
+
+    expect(reporter.getBuffer()).to.equal(expected);
   });
 
   it('should handle end with uncaught failure with inline diffs', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    var expected = '\n  0 passing\n' +
+      '  1 failing\n\n  1) :\n\n' +
+      '      Uncaught       \n' +
+      '      actual expected\n      \n' +
+      '      "BbbAaa"\n      \n  \n\n\n\n';
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
-    var spy = sandbox.stub(reporter, 'print', function (eventName, eventFn) { fn = eventFn; });
+    stubPrint(reporter);
+
     reporter.stats = {failures: 1};
     Reporter.inlineDiffs = true;
     reporter.failures = [{
@@ -114,123 +246,19 @@ describe('Reporter', function () {
       }
     }];
 
-    //act
     fn['end']();
 
-    //assert
-    spy.calledWith('')
+    expect(reporter.getBuffer()).to.equal(expected);
   });
 
   it('should handle test end', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
+    var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
+    stubPrint(reporter);
 
     //act
     fn['test end']();
-  });
 
-  it('should handle pending', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fn['pending']({});
-  });
-
-  it('should handle suite end', function () {
-    var fn = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fn[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fn['suite end']();
-  });
-
-  it('should handle unnamed suite', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['suite']({});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal('\n');
-  });
-
-  it('should handle named suite', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['suite']({title: "someName"});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal('someName\n');
-  });
-
-  it('should handle unnamed pass', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['pass']({});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal('  ✓  \n');
-  });
-
-  it('should handle pass', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['pass']({title: 'someTestName'});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal('  ✓ someTestName \n');
-  });
-
-  it('should handle fail', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['fail']({title: 'someTestName'});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal("  1) someTestName\n");
-  });
-
-  it('should count failures', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['fail']({title: 'someTestName'});
-    fns['fail']({title: 'someTestName'});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal("  1) someTestName\n  2) someTestName\n");
-  });
-
-  it('should count failures', function () {
-    var fns = {};
-    sandbox.stub(mockRunner, 'on', function (eventName, eventFn) { fns[eventName] = eventFn; });
-    reporter = new Reporter(mockRunner);
-
-    //act
-    fns['fail']({title: 'someTestName'});
-    fns['fail']({title: 'someTestName'});
-
-    //assert
-    expect(reporter.getBuffer()).to.equal("  1) someTestName\n  2) someTestName\n");
+    expect(reporter.getBuffer()).to.equal('');
   });
 });

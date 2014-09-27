@@ -256,7 +256,7 @@ function Base(runner) {
 }
 
 Base.prototype.getBuffer = function () {
-  return this._buffer;
+  return this._buffer || '';
 };
 
 Base.prototype.print = function () {
@@ -347,9 +347,14 @@ Base.prototype.epilogue = function () {
   self.log();
 
   // passes
-  fmt = color('bright pass', ' ') + color('green', ' %d passing') + color('light', ' (%s)');
+  if (stats.duration) {
+    fmt = color('bright pass', ' ') + color('green', ' %d passing') + color('light', ' (%s)');
+    self.log(fmt, stats.passes || 0, ms(stats.duration));
+  } else {
+    fmt = color('bright pass', ' ') + color('green', ' %d passing');
+    self.log(fmt, stats.passes || 0);
+  }
 
-  self.log(fmt, stats.passes || 0, ms(stats.duration));
 
   // pending
   if (stats.pending) {
