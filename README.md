@@ -11,7 +11,7 @@ Used when reporting from Gulp. Outputs all test results at once to avoid an asyn
 
 [![Dependencies](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)
 
-[![NPM version](https://badge.fury.io/js/mocha-spec-reporter-async.svg.svg)](http://badge.fury.io/js/mocha-spec-reporter-async.svg)
+[![NPM version](https://badge.fury.io/js/mocha-spec-reporter-async.svg)](http://badge.fury.io/js/mocha-spec-reporter-async.svg)
 
 ##Example
 ```JavaScript
