@@ -192,7 +192,8 @@ describe('Reporter', function () {
       '  1 failing\n\n' +
       '  1) :\n\n      Uncaught \n' +
       '      + expected - actual\n\n' +
-      '      +"ABbbb"\n      -"AAaab"\n' +
+      '      -"AAaab"\n' +
+      '      +"ABbbb"\n' +
       '      \n  \n\n\n\n';
     var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
@@ -231,7 +232,7 @@ describe('Reporter', function () {
       '  1 failing\n\n  1) :\n\n' +
       '      Uncaught       \n' +
       '      actual expected\n      \n' +
-      '      "BbbAaa"\n      \n  \n\n\n\n';
+      '      "AaaBbb"\n      \n  \n\n\n\n';
     var fn = listenToEvents(mockRunner);
     reporter = new Reporter(mockRunner);
     stubPrint(reporter);
