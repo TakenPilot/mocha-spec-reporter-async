@@ -23,13 +23,13 @@
   "license": "ISC",
   "dependencies": {
     "diff": "^1.0.8",
-    "mocha": "^2.0.1"
+    "mocha": "^2.0.1",
+    "lodash": "^2.4.1"
   },
   "devDependencies": {
     "blanket": "^1.1.6",
     "chai": "^1.10.0",
     "coveralls": "^2.11.2",
-    "lodash": "^2.4.1",
     "mocha-lcov-reporter": "0.0.1",
     "sinon": "^1.11.1"
   }
