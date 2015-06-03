@@ -1,6 +1,6 @@
 {
   "name": "mocha-spec-reporter-async",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Used when reporting from Gulp.  Outputs all test results at once to avoid an async console.log mess.",
   "main": "index.js",
   "keywords": [
@@ -22,15 +22,15 @@
   "author": "Dane Stuckel",
   "license": "ISC",
   "dependencies": {
-    "diff": "^1.0.8",
-    "mocha": "^2.0.1",
-    "lodash": "^2.4.1"
+    "diff": ">=1.0.8",
+    "mocha": ">=2.0.1",
+    "lodash": ">=2.4.1"
   },
   "devDependencies": {
-    "blanket": "^1.1.6",
-    "chai": "^1.10.0",
-    "coveralls": "^2.11.2",
+    "blanket": "^1.1",
+    "chai": "^1.10",
+    "coveralls": "^2.11",
     "mocha-lcov-reporter": "0.0.1",
-    "sinon": "^1.11.1"
+    "sinon": "^1.14"
   }
 }
