@@ -3,15 +3,8 @@ mocha-spec-reporter-async
 
 Used when reporting from Gulp. Outputs all test results at once to avoid an async console.log mess.
 
-[![Build Status](https://travis-ci.org/TakenPilot/mocha-spec-reporter-async.svg?branch=master)](https://travis-ci.org/TakenPilot/mocha-spec-reporter-async)
-
-[![Code Climate](https://codeclimate.com/github/TakenPilot/mocha-spec-reporter-async/badges/gpa.svg)](https://codeclimate.com/github/TakenPilot/mocha-spec-reporter-async)
-
-[![Coverage Status](https://coveralls.io/repos/TakenPilot/mocha-spec-reporter-async/badge.png?branch=master)](https://coveralls.io/r/TakenPilot/mocha-spec-reporter-async?branch=master)
-
-[![Dependencies](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)](https://david-dm.org/TakenPilot/mocha-spec-reporter-async.svg?style=flat)
-
-[![NPM version](https://badge.fury.io/js/mocha-spec-reporter-async.svg)](http://badge.fury.io/js/mocha-spec-reporter-async.svg)
+> **⚠ Warning**
+> This library is deprecated. The underlying libraries that this package relies on are either unmaintained or have security warnings. I'm deprecating this project until someone rewrites it with modern tooling.
 
 ##Example
 ```JavaScript
